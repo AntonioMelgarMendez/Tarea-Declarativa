@@ -40,9 +40,12 @@ La carpeta de trabajo debe ser la raíz del proyecto. Los scripts `.sh` requiere
 1. Introducir una expresión de **x minúscula**, sin punto final.
 2. Introducir los límites `a` y `b`; se admiten `pi`, `e` y expresiones constantes como `pi/2`.
 3. Pulsar **Calcular integral** o Enter.
-4. Consultar **Resultado**, **Reglas aplicadas** y **Sintaxis y cobertura**.
+4. Consultar el resultado y la gráfica; **Ver procedimiento** abre las reglas aplicadas.
+5. **Ejemplos** muestra expresiones con sus límites y las carga en la calculadora.
 
-Usar `*` para multiplicar, `^` para potencias, punto decimal y ángulos en **radianes**. `asin` y `acos` significan funciones inversas, no recíprocos.
+Se admite multiplicación implícita: `2x`, `3x^2`, `2(x+1)` y `sin(2x)`. También puede usarse `*` o `×`. El teclado inserta en la función o en el límite que tenga el foco. Las potencias se escriben con `^`, los decimales con punto y los ángulos en **radianes**. Se aceptan `π`, `÷` y `−`. `asin` y `acos` significan funciones inversas, no recíprocos.
+
+La interfaz blanca mantiene solo controles y resultados; los detalles de alcance y aritmética se documentan aquí, no como bloques de texto dentro de la calculadora. Al editar una entrada se descarta el resultado anterior.
 
 | Expresión | a | b | Integral definida | Área geométrica |
 |---|---:|---:|---:|---:|
@@ -135,7 +138,7 @@ sh scripts/probar.sh
 
 Incluye PLUnit (reglas, derivación numérica de las primitivas de las 22 familias, ejemplo de clase 13, dominios, área, orientación y entradas maliciosas) y una prueba Java–Prolog real sin abrir la ventana. Compila Java con `-Xlint:all`.
 
-Verificado en este equipo con OpenJDK 17 y SWI-Prolog 10.1.18: **82 instancias PLUnit**, **12 comprobaciones Java–Prolog** y la prueba visual opcional.
+Verificado en este equipo con OpenJDK 17 y SWI-Prolog 10.1.18: **99 instancias PLUnit**, **16 comprobaciones Java–Prolog** y la prueba visual opcional (teclado, ejemplos, límites, errores y tamaño mínimo).
 
 Prueba visual opcional (abre y cierra la ventana, comprueba cálculo/error y guarda `docs/captura.png`):
 
@@ -148,6 +151,7 @@ java -cp build PruebaInterfaz
 
 ```text
 prolog/integrales.pl           Reglas simbólicas, validación, evaluación y área
+prolog/entrada.pl              Tokenización de notación de calculadora y productos implícitos
 prolog/puente.pl               Entrada/salida del proceso Prolog
 java/Aplicacion.java           Interfaz Swing y dibujo de muestras
 java/PuenteProlog.java         Transporte y lectura de resultados, sin cálculo simbólico

@@ -42,11 +42,28 @@ test(clase_13_variable_libre) :-
     Area is Superior-Inferior, cerca(Area,98/3), assertion(var(X)).
 test(clase_12_atomo) :- s(x,x^2,R), evaluar(x,R,3,Y), cerca(Y,9).
 test(no_ligar_al_simplificar) :- s(X, X+0, F), assertion(var(X)), evaluar(X,F,2,Y), cerca(Y,2).
+test(simplificar_coeficiente) :- s(X,2*X,F), assertion(var(X)), assertion(F == X^2).
+test(simplificar_coeficiente_potencia) :- s(X,3*X^2,F), assertion(var(X)), assertion(F == X^3).
+test(pi_unicode) :- leer_limite('2π',N), cerca(N,2*pi).
 test(no_ligar_potencia_ajena, [fail]) :- s(X,X^X,_).
 test(no_aceptar_variable_ajena, [fail]) :- s(_,Y+1,_), nonvar(Y).
 test(constante) :- resuelve('5',0,2,10,10).
 test(cero) :- resuelve('0',-3,3,0,0).
 test(lineal) :- resuelve('3*x',0,2,6,6).
+test(multiplicacion_implicita) :- resuelve('2x',0,2,4,4).
+test(coeficiente_decimal) :- resuelve('2.5x',0,2,5,5).
+test(coeficiente_negativo) :- resuelve('-2x',0,2,-4,4).
+test(coeficiente_cientifico) :- resuelve('1e-3x',0,2,0.002,0.002).
+test(parentesis_implicitos) :- resuelve('2(x+1)',0,2,8,8).
+test(funcion_implicita) :- resuelve('2sin(x)',0,1,2*(1-cos(1)),2*(1-cos(1))).
+test(argumento_implicito) :- resuelve('sin(2x)',0,1,(1-cos(2))/2,(1-cos(2))/2).
+test(potencia_implicita) :- resuelve('3x^2',0,2,8,8).
+test(operadores_visuales) :- resuelve('2×x − 1',0,1,0,0.5).
+test(parentesis_factor_derecha) :- resuelve('(x+1)2',0,2,8,8).
+test(pi_implicito) :- leer_limite('2pi',N), cerca(N,2*pi).
+test(conservar_resta) :- resuelve('x-2',0,2,-2,2).
+test(numeros_separados, [throws(error(_,_))]) :- analizar('2 3',0,1,_).
+test(nombre_no_dividido, [throws(error(integral(_),_))]) :- analizar('sinx',0,1,_).
 test(polinomio) :- resuelve('3*x^2+2*x-1',0,2,10,280/27).
 test(cambio_signo) :- resuelve('x',-1,1,0,1).
 test(funcion_negativa) :- resuelve('-2',0,3,-6,6).

@@ -2,6 +2,7 @@
                        leer_expresion/3, leer_limite/2]).
 
 :- use_module(library(lists)).
+:- use_module(entrada).
 
 % Clases 11 y 12: construir una expresión, NO evaluarla todavía.
 % También funciona s(X, X^2, R), con X libre, como en la clase 13.
@@ -80,8 +81,9 @@ finito(N) :- (integer(N) -> true ; float(N), float_class(N, C), memberchk(C,[zer
 leer_expresion(Texto, V, E) :-
     string_length(Texto, L), exigir(L > 0, 'Escriba una expresion.'),
     exigir(L =< 2000, 'Expresion demasiado larga (maximo 2000 caracteres).'),
+    exigir(preparar_entrada(Texto, Preparado), 'Revise la expresion. Ejemplo: 2x + sin(x).'),
     % Un centinela comprueba que no queden terminos tras el primero.
-    string_concat(Texto, "\n . '$fin_integrales'.", Completo),
+    string_concat(Preparado, "\n . '$fin_integrales'.", Completo),
     setup_call_cleanup(open_string(Completo, Flujo),
         (read_term(Flujo,T,[variable_names(Vars),syntax_errors(error)]),
          read_term(Flujo,Fin,[syntax_errors(error)]),
@@ -143,8 +145,15 @@ reducir(X/A, X) :- A == 1, !.
 reducir(X^A, X) :- A == 1, !.
 reducir(_^A, 1) :- A == 0, !.
 reducir(-A, X) :- nonvar(A), A = -X, !.
+reducir(A*(B/C*X), R) :- number(A), number(B), number(C), C =\= 0, !,
+    K is A*B/C, factor(K,X,R).
+reducir(A*(X/B), R) :- number(A), number(B), B =\= 0, !,
+    K is A/B, factor(K,X,R).
 reducir(T, R) :- ground(T), T =.. [F|A], memberchk(F,[+,-,*]), maplist(number,A), !, R is T.
 reducir(T, T).
+factor(K,X,X) :- K =:= 1, !.
+factor(K,_,0) :- K =:= 0, !.
+factor(K,X,K*X).
 
 % Servicio matematico: rechaza intervalos no continuos, incluidas singularidades interiores.
 analizar(Texto, A, B, Resultado) :-

@@ -24,7 +24,7 @@ La base de conocimiento y el cálculo viven exclusivamente en Prolog. Swing solo
 
 - **Conocimiento:** reglas de integración y tabla `primitiva/4`.
 - **Inferencia:** unificación de patrones, condiciones de aplicabilidad, recursión y selección de reglas en `regla/4`.
-- **Explicación:** lista de reglas aplicadas que se presenta en la pestaña correspondiente. No es una demostración algebraica paso a paso completa.
+- **Explicación:** lista de reglas aplicadas disponible en **Ver procedimiento**. No es una demostración algebraica paso a paso completa.
 - **Validación:** vocabulario de entrada cerrado, dominios y límites de recursos.
 
 Los cortes seleccionan la regla aplicable; las sumas/restas resuelven cada subobjetivo de manera recursiva. Un producto de dos funciones no constantes no activa la regla de factor constante.
@@ -68,7 +68,7 @@ Invertir los límites cambia el signo de la integral definida, pero no el área.
 
 ## 5. Seguridad y errores
 
-El proceso Java ejecuta un comando fijo, sin shell y sin insertar expresiones en el argumento `-g`. La expresión y límites viajan por entrada estándar. Prolog los lee como términos, verifica que exista exactamente una expresión, rechaza variables proporcionadas por el usuario y normaliza solo operadores y funciones permitidas.
+El proceso Java ejecuta un comando fijo, sin shell y sin insertar expresiones en el argumento `-g`. La expresión y límites viajan por entrada estándar. Un lexer DCG Prolog adapta `2x`, `2(x+1)` y los símbolos de calculadora a operadores explícitos, sin confundir nombres de función, notación científica o signos de resta. Después se verifica que exista exactamente una expresión, se rechazan variables proporcionadas por el usuario y se normalizan solo operadores y funciones permitidas.
 
 Nunca se invoca la entrada mediante `call/1`. El `call/1` de `exigir/2` recibe únicamente comprobaciones construidas por el programa. Se rechazan directivas, objetivos como `halt(0)` y términos posteriores.
 
