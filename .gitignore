@@ -1,0 +1,11 @@
+build/
+*.class
+
+# Material docente usado solo como referencia local (no publicar).
+/PD Clase *.pdf
+/integrales_2026_02_sec01.pl
+
+# Directorios locales de herramientas.
+/.agents/
+/.aws/
+/.codex/
