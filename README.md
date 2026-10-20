@@ -47,6 +47,8 @@ Se admite multiplicación implícita: `2x`, `3x^2`, `2(x+1)` y `sin(2x)`. Tambi�
 
 La interfaz blanca mantiene solo controles y resultados; los detalles de alcance y aritmética se documentan aquí, no como bloques de texto dentro de la calculadora. Al editar una entrada se descarta el resultado anterior.
 
+La gráfica vacía muestra una tarjeta verde suave, con mensaje e icono centrados. **Ver procedimiento** se habilita tras calcular y abre pasos numerados y un resumen, con desplazamiento para procedimientos largos y cierre con **Cerrar** o Escape. [Vista inicial](docs/captura-vacia.png) · [Procedimiento](docs/captura-procedimiento.png).
+
 | Expresión | a | b | Integral definida | Área geométrica |
 |---|---:|---:|---:|---:|
 | `5` | 0 | 2 | 10 | 10 |
@@ -140,7 +142,7 @@ Incluye PLUnit (reglas, derivación numérica de las primitivas de las 22 famili
 
 Verificado en este equipo con OpenJDK 17 y SWI-Prolog 10.1.18: **99 instancias PLUnit**, **16 comprobaciones Java–Prolog** y la prueba visual opcional (teclado, ejemplos, límites, errores y tamaño mínimo).
 
-Prueba visual opcional (abre y cierra la ventana, comprueba cálculo/error y guarda `docs/captura.png`):
+Prueba visual opcional (abre y cierra las ventanas, comprueba cálculo/error, centrado al redimensionar y procedimiento corto/largo, y actualiza las capturas de `docs/`):
 
 ```sh
 javac -encoding UTF-8 -d build java/*.java tests/PruebaInterfaz.java

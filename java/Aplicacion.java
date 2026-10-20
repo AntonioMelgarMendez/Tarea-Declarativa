@@ -32,7 +32,8 @@ public final class Aplicacion {
     private final JLabel area = valor("—");
     private final JTextArea primitiva = texto(22);
     private final JTextArea evaluaciones = texto(13);
-    private final JTextArea pasos = texto(14);
+    private final Boton verPasos = new Boton("Ver procedimiento  →", VERDE_CLARO, ACENTO);
+    private PuenteProlog.Resultado resultadoActual;
     private final JLabel funcionGrafica = etiqueta("f(x) = 2x", 13, SUAVE);
     private final JLabel tituloResultado = etiqueta("Resultado", 18, TINTA);
     private final Grafica grafica = new Grafica();
@@ -167,14 +168,9 @@ public final class Aplicacion {
         formula.add(evaluaciones, BorderLayout.SOUTH);
         resumen.add(formula, BorderLayout.CENTER);
         resultado.add(resumen, BorderLayout.CENTER);
-        Boton verPasos = new Boton("Ver procedimiento  ↗", Color.WHITE, SUAVE);
         verPasos.setName("procedimiento");
-        verPasos.setPreferredSize(new Dimension(190, 32));
-        verPasos.addActionListener(e -> {
-            JScrollPane scroll = new JScrollPane(pasos); scroll.setBorder(null);
-            scroll.setPreferredSize(new Dimension(490, 320));
-            JOptionPane.showMessageDialog(verPasos, scroll, "Procedimiento", JOptionPane.PLAIN_MESSAGE);
-        });
+        verPasos.setPreferredSize(new Dimension(196, 36));
+        verPasos.addActionListener(e -> mostrarProcedimiento());
         JPanel mas = panel(new FlowLayout(FlowLayout.LEFT, 0, 0)); mas.add(verPasos);
         resultado.add(mas, BorderLayout.SOUTH);
         columna.add(resultado, BorderLayout.NORTH);
@@ -192,6 +188,87 @@ public final class Aplicacion {
         curva.add(leyenda, BorderLayout.SOUTH);
         columna.add(curva, BorderLayout.CENTER);
         return columna;
+    }
+
+    private void mostrarProcedimiento() {
+        if (resultadoActual == null) return;
+        PuenteProlog.Resultado r = resultadoActual;
+        JDialog dialogo = new JDialog(SwingUtilities.getWindowAncestor(verPasos),
+                "Procedimiento", Dialog.ModalityType.DOCUMENT_MODAL);
+        dialogo.setName("dialogo-procedimiento");
+        dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        JPanel contenido = panel(new BorderLayout(0, 20));
+        contenido.setOpaque(true); contenido.setBackground(Color.WHITE);
+        contenido.setBorder(BorderFactory.createEmptyBorder(24, 26, 22, 26));
+
+        JPanel encabezado = panel(new BorderLayout(0, 12));
+        encabezado.add(negrita("Procedimiento", 22), BorderLayout.NORTH);
+        JTextArea integral = texto(16);
+        integral.setForeground(SUAVE);
+        integral.setText("∫ " + visual(expresion.getText().strip()) + " dx");
+        integral.setRows(2);
+        encabezado.add(integral, BorderLayout.CENTER);
+        contenido.add(encabezado, BorderLayout.NORTH);
+
+        JPanel lista = panel(null);
+        lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
+        lista.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+        for (int i = 0; i < r.pasos().size(); i++) {
+            JPanel fila = panel(new BorderLayout(12, 0));
+            Tarjeta numero = new Tarjeta(VERDE_CLARO);
+            numero.setBorder(BorderFactory.createEmptyBorder());
+            numero.setLayout(new GridBagLayout());
+            numero.setPreferredSize(new Dimension(30, 30));
+            JLabel orden = negrita(Integer.toString(i + 1), 12);
+            orden.setForeground(ACENTO); numero.add(orden);
+            JPanel indicador = panel(new BorderLayout());
+            indicador.add(numero, BorderLayout.NORTH);
+            fila.add(indicador, BorderLayout.WEST);
+            JTextArea explicacion = texto(14);
+            explicacion.setText(visual(r.pasos().get(i)));
+            explicacion.setSize(410, Short.MAX_VALUE);
+            explicacion.setPreferredSize(new Dimension(410, Math.max(30, explicacion.getPreferredSize().height)));
+            fila.add(explicacion, BorderLayout.CENTER);
+            fila.setAlignmentX(Component.LEFT_ALIGNMENT);
+            fila.setMaximumSize(new Dimension(Integer.MAX_VALUE, fila.getPreferredSize().height));
+            lista.add(fila);
+            if (i < r.pasos().size() - 1) lista.add(Box.createVerticalStrut(18));
+        }
+        JScrollPane scroll = new JScrollPane(lista);
+        scroll.setName("pasos-procedimiento");
+        scroll.setBorder(null); scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.setPreferredSize(new Dimension(470, Math.min(280, lista.getPreferredSize().height + 4)));
+        contenido.add(scroll, BorderLayout.CENTER);
+
+        JPanel pie = panel(new BorderLayout(0, 18));
+        Tarjeta resumen = new Tarjeta(VERDE_CLARO);
+        resumen.setLayout(new BorderLayout(0, 9));
+        resumen.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
+        resumen.add(etiqueta("Integral definida", 12, SUAVE), BorderLayout.NORTH);
+        JTextArea evaluacion = texto(16);
+        evaluacion.setOpaque(false);
+        evaluacion.setText("F(b) − F(a) = " + formato(r.fb()) + " − (" + formato(r.fa()) + ")\n= " + formato(r.integral()));
+        evaluacion.setName("resultado-procedimiento");
+        resumen.add(evaluacion, BorderLayout.CENTER);
+        pie.add(resumen, BorderLayout.NORTH);
+        Boton cerrar = new Boton("Cerrar", ACENTO, Color.WHITE);
+        cerrar.setName("cerrar-procedimiento");
+        cerrar.setPreferredSize(new Dimension(104, 38));
+        cerrar.addActionListener(e -> dialogo.dispose());
+        JPanel acciones = panel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        acciones.add(cerrar); pie.add(acciones, BorderLayout.SOUTH);
+        contenido.add(pie, BorderLayout.SOUTH);
+        dialogo.setContentPane(contenido);
+        dialogo.getRootPane().setDefaultButton(cerrar);
+        dialogo.getRootPane().registerKeyboardAction(e -> dialogo.dispose(),
+                KeyStroke.getKeyStroke("ESCAPE"), JComponent.WHEN_IN_FOCUSED_WINDOW);
+        dialogo.setMinimumSize(new Dimension(530, 430));
+        dialogo.pack();
+        dialogo.setSize(570, Math.min(700, Math.max(460, dialogo.getHeight())));
+        dialogo.setLocationRelativeTo(verPasos);
+        dialogo.setVisible(true);
     }
 
     private void ejemplos(JButton origen) {
@@ -242,7 +319,8 @@ public final class Aplicacion {
     }
     private void limpiarResultado() {
         definida.setText("—"); area.setText("—");
-        primitiva.setText("—"); evaluaciones.setText(""); pasos.setText("");
+        primitiva.setText("—"); evaluaciones.setText("");
+        resultadoActual = null; verPasos.setEnabled(false);
         tituloResultado.setText("Resultado"); tituloResultado.setForeground(TINTA);
         funcionGrafica.setText("f(x) = " + visual(expresion.getText()));
         grafica.actualizar(List.of());
@@ -265,10 +343,7 @@ public final class Aplicacion {
                     definida.setText(formato(r.integral())); area.setText(formato(r.area()));
                     primitiva.setText("F(x) = " + visual(r.primitiva()) + " + C");
                     evaluaciones.setText("F(a) = " + formato(r.fa()) + "     ·     F(b) = " + formato(r.fb()));
-                    StringBuilder detalle = new StringBuilder();
-                    for (int i = 0; i < r.pasos().size(); i++) detalle.append(i+1).append(". ").append(r.pasos().get(i)).append("\n\n");
-                    detalle.append("F(b) − F(a) = ").append(formato(r.integral()));
-                    pasos.setText(detalle.toString()); pasos.setCaretPosition(0);
+                    resultadoActual = r; verPasos.setEnabled(true);
                     grafica.actualizar(r.puntos());
                     estado.setText(" ");
                 } catch (InterruptedException e) {
@@ -346,7 +421,7 @@ public final class Aplicacion {
         }
         @Override protected void paintComponent(Graphics original) {
             Graphics2D g=(Graphics2D)original.create(); calidad(g); Color fondo=getBackground();
-            if(!isEnabled()) fondo=new Color(216,228,226);
+            if(!isEnabled()) fondo=FONDO;
             else if(getModel().isPressed()) fondo=fondo.darker();
             else if(getModel().isRollover()) fondo=fondo.equals(ACENTO)?ACENTO.darker():new Color(232,243,240);
             g.setColor(fondo); g.fillRoundRect(0,0,getWidth(),getHeight(),12,12);
@@ -369,17 +444,33 @@ public final class Aplicacion {
     private static final class Grafica extends JPanel {
         private static final long serialVersionUID = 1L;
         private List<PuenteProlog.Punto> puntos = List.of();
-        Grafica() { setBackground(Color.WHITE); }
-        void actualizar(List<PuenteProlog.Punto> nuevos) { puntos = nuevos; repaint(); }
+        private final JLabel vacio = etiqueta("La curva aparecerá al calcular", 14, ACENTO);
+        private final Tarjeta tarjetaVacia = new Tarjeta(new Color(229, 245, 237));
+        Grafica() {
+            setName("grafica"); setBackground(Color.WHITE); setLayout(new GridBagLayout());
+            vacio.setName("grafica-vacia");
+            vacio.setIcon(new IconoCurva()); vacio.setIconTextGap(16);
+            vacio.setHorizontalAlignment(SwingConstants.CENTER);
+            vacio.setHorizontalTextPosition(SwingConstants.CENTER);
+            vacio.setVerticalTextPosition(SwingConstants.BOTTOM);
+            tarjetaVacia.setName("tarjeta-grafica-vacia");
+            tarjetaVacia.setLayout(new GridBagLayout());
+            tarjetaVacia.setBorder(BorderFactory.createEmptyBorder(24, 30, 24, 30));
+            tarjetaVacia.add(vacio);
+            add(tarjetaVacia);
+        }
+        void actualizar(List<PuenteProlog.Punto> nuevos) {
+            puntos = nuevos;
+            tarjetaVacia.setVisible(nuevos.isEmpty()); vacio.setVisible(nuevos.isEmpty());
+            revalidate(); repaint();
+        }
         @Override protected void paintComponent(Graphics original) {
             super.paintComponent(original);
             Graphics2D g = (Graphics2D) original.create();
             try {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 int w = getWidth(), h = getHeight();
-                if (puntos.isEmpty()) {
-                    g.setColor(TINTA); g.drawString("La curva aparecerá al calcular.", 35, h / 2); return;
-                }
+                if (puntos.isEmpty()) return;
                 double minX = puntos.get(0).x(), maxX = puntos.get(puntos.size() - 1).x();
                 double minY = 0, maxY = 0;
                 for (var p : puntos) { minY = Math.min(minY, p.y()); maxY = Math.max(maxY, p.y()); }
@@ -422,6 +513,21 @@ public final class Aplicacion {
                 g.drawString(formato(puntos.get(puntos.size()-1).x()), w - 70, h - 17);
                 g.drawString("x", w - 20, (int)cero - 6);
             } finally { g.dispose(); }
+        }
+    }
+
+    private static final class IconoCurva implements Icon {
+        @Override public int getIconWidth() { return 56; }
+        @Override public int getIconHeight() { return 56; }
+        @Override public void paintIcon(Component c, Graphics original, int x, int y) {
+            Graphics2D g = (Graphics2D) original.create(); calidad(g); g.translate(x,y);
+            g.setColor(VERDE_CLARO); g.fillRoundRect(0,0,56,56,18,18);
+            g.setStroke(new BasicStroke(1.3f)); g.setColor(new Color(171,202,194));
+            g.drawLine(13,41,43,41); g.drawLine(14,14,14,41);
+            Path2D curva = new Path2D.Double(); curva.moveTo(14,36);
+            curva.curveTo(24,36,24,19,32,19); curva.curveTo(37,19,39,25,43,22);
+            g.setStroke(new BasicStroke(2.2f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
+            g.setColor(ACENTO); g.draw(curva); g.dispose();
         }
     }
 }
