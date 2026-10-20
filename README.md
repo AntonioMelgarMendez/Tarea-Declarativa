@@ -130,7 +130,9 @@ F = x^3/3.
 
 En `s/3`, `F` omite la constante de integración; la interfaz agrega `+ C`. La presentación simbólica se simplifica localmente, no se reduce a una forma algebraica canónica.
 
-Referencia técnica: [aritmética oficial de SWI-Prolog](https://www.swi-prolog.org/man/arith.html), para `is/2` y funciones trigonométricas/hiperbólicas.
+Los coeficientes racionales de la antiderivada se muestran como fracciones reducidas: `3x` produce `3/2*x^2 + C` y `5x^2` produce `5/3*x^3 + C`. La evaluación en los límites y el área siguen siendo resultados numéricos. Los literales decimales de entrada se racionalizan dentro de su error de representación; por ejemplo, `2.5x` produce `5/4*x^2 + C`. No se presentan aproximaciones de `pi`, `e` o funciones trascendentes como fracciones exactas. [Ejemplo en la interfaz](docs/captura-fraccion.png).
+
+Referencia técnica: [aritmética oficial de SWI-Prolog](https://www.swi-prolog.org/man/arith.html), para `is/2`, división racional y funciones trigonométricas/hiperbólicas; [conversión de literales con `rationalize`](https://www.swi-prolog.org/pldoc/man?function=rationalize%2F1).
 
 ## Pruebas
 
@@ -140,7 +142,7 @@ sh scripts/probar.sh
 
 Incluye PLUnit (reglas, derivación numérica de las primitivas de las 22 familias, ejemplo de clase 13, dominios, área, orientación y entradas maliciosas) y una prueba Java–Prolog real sin abrir la ventana. Compila Java con `-Xlint:all`.
 
-Verificado en este equipo con OpenJDK 17 y SWI-Prolog 10.1.18: **99 instancias PLUnit**, **16 comprobaciones Java–Prolog** y la prueba visual opcional (teclado, ejemplos, límites, errores y tamaño mínimo).
+Verificado en este equipo con OpenJDK 17 y SWI-Prolog 10.1.18: **113 instancias PLUnit**, **20 comprobaciones Java–Prolog** y la prueba visual opcional (teclado, ejemplos, fracciones en la antiderivada, límites, errores y tamaño mínimo).
 
 Prueba visual opcional (abre y cierra las ventanas, comprueba cálculo/error, centrado al redimensionar y procedimiento corto/largo, y actualiza las capturas de `docs/`):
 

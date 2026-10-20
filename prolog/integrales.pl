@@ -10,7 +10,8 @@ s(Var, Expresion, Resultado) :- integrar(Var, Expresion, Resultado, _).
 
 integrar(V, E, F, Pasos) :-
     (var(V); atom(V)), valida(V, E),
-    regla(V, E, Bruta, Pasos), simplificar(Bruta, F), !.
+    regla(V, E, Bruta, Pasos), simplificar(Bruta, Simple),
+    fracciones(Simple, F), !.
 
 regla(V, E, 1/2*V^2, ['Variable: integral de x = x^2/2.']) :- E == V, !.
 regla(V, K, K*V, ['Constante: integral de k = k*x.']) :- number(K), !.
@@ -61,7 +62,7 @@ afin(V, -U, A, B) :- !, afin(V,U,C,D), A is -C, B is -D.
 afin(V, K*U, A, B) :- number(K), !, afin(V,U,C,D), A is K*C, B is K*D.
 afin(V, U*K, A, B) :- number(K), !, afin(V,U,C,D), A is K*C, B is K*D.
 afin(V, U/K, A, B) :- number(K), K =\= 0, !,
-    afin(V,U,C,D), A is C/K, B is D/K.
+    afin(V,U,C,D), aritmetica(C/K,A), aritmetica(D/K,B).
 
 % Clase 13: copia independiente para evaluar sucesivamente sin ligar el original.
 evaluar(V, E, Punto, Valor) :-
@@ -75,7 +76,11 @@ sustituir(V, E, P, R) :- E =.. [F|Args],
     maplist(reemplazar(V,P), Args, Nuevos), R =.. [F|Nuevos].
 reemplazar(V, P, E, R) :- sustituir(V, E, P, R).
 
-finito(N) :- (integer(N) -> true ; float(N), float_class(N, C), memberchk(C,[zero,subnormal,normal])).
+finito(N) :- (rational(N) -> true ; float(N), float_class(N, C), memberchk(C,[zero,subnormal,normal])).
+
+% No introducir flotantes al dividir dos constantes racionales.
+aritmetica(A/B, R) :- rational(A), rational(B), !, R is A rdiv B.
+aritmetica(E, R) :- R is E.
 
 % Entrada: solo datos matemáticos permitidos, nunca call/1 sobre texto del usuario.
 leer_expresion(Texto, V, E) :-
@@ -101,13 +106,14 @@ leer_limite(Texto, N) :- leer_expresion(Texto, V, E),
 normalizar(x, V, V, _) :- !.
 normalizar(pi, _, N, _) :- !, N is pi.
 normalizar(e, _, N, _) :- !, N is exp(1).
-normalizar(N, _, N, _) :- number(N), finito(N), !, abs(N) =< 1.0e12.
+normalizar(N, _, R, _) :- number(N), finito(N), !, abs(N) =< 1.0e12,
+    (float(N) -> R is rationalize(N) ; R = N).
 normalizar(T, V, E, D) :-
     D < 60, compound(T), T =.. [F|Args], alias(F, G),
     length(Args, A), permitida(G, A), D1 is D+1,
     maplist(normalizar_arg(V,D1), Args, Nuevos), R =.. [G|Nuevos],
     potencia_acotada(R),
-    (ground(R) -> E is R, finito(E), abs(E) =< 1.0e12 ; E = R).
+    (ground(R) -> aritmetica(R,E), finito(E), abs(E) =< 1.0e12 ; E = R).
 normalizar_arg(V,D,T,E) :- normalizar(T,V,E,D).
 potencia_acotada(T) :- (T = _^N, number(N) -> abs(N) =< 1000 ; true).
 
@@ -145,15 +151,28 @@ reducir(X/A, X) :- A == 1, !.
 reducir(X^A, X) :- A == 1, !.
 reducir(_^A, 1) :- A == 0, !.
 reducir(-A, X) :- nonvar(A), A = -X, !.
-reducir(A*(B/C*X), R) :- number(A), number(B), number(C), C =\= 0, !,
-    K is A*B/C, factor(K,X,R).
+reducir(A*(B*X), R) :- number(A), number(B), !,
+    K is A*B, factor(K,X,R).
 reducir(A*(X/B), R) :- number(A), number(B), B =\= 0, !,
-    K is A/B, factor(K,X,R).
-reducir(T, R) :- ground(T), T =.. [F|A], memberchk(F,[+,-,*]), maplist(number,A), !, R is T.
+    aritmetica(A/B,K), factor(K,X,R).
+reducir((A*X)/B, R) :- number(A), number(B), B =\= 0, !,
+    aritmetica(A/B,K), factor(K,X,R).
+reducir((X/A)/B, X/K) :- number(A), number(B), A =\= 0, B =\= 0, !,
+    K is A*B.
+reducir(T, R) :- ground(T), T =.. [F|A], memberchk(F,[+,-,*,/]), maplist(number,A), !,
+    aritmetica(T,R).
 reducir(T, T).
 factor(K,X,X) :- K =:= 1, !.
 factor(K,_,0) :- K =:= 0, !.
 factor(K,X,K*X).
+
+% 3r2 es una representacion interna: en la formula visible se usa 3/2.
+% No volver a simplificar despues de esta conversion ni ligar la variable libre.
+fracciones(E, E) :- var(E), !.
+fracciones(E, N/D) :- rational(E), \+ integer(E), !,
+    N is numerator(E), D is denominator(E).
+fracciones(E, E) :- atomic(E), !.
+fracciones(E, R) :- E =.. [F|Args], maplist(fracciones,Args,Nuevos), R =.. [F|Nuevos].
 
 % Servicio matematico: rechaza intervalos no continuos, incluidas singularidades interiores.
 analizar(Texto, A, B, Resultado) :-

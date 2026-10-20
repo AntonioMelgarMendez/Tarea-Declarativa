@@ -44,6 +44,20 @@ test(clase_12_atomo) :- s(x,x^2,R), evaluar(x,R,3,Y), cerca(Y,9).
 test(no_ligar_al_simplificar) :- s(X, X+0, F), assertion(var(X)), evaluar(X,F,2,Y), cerca(Y,2).
 test(simplificar_coeficiente) :- s(X,2*X,F), assertion(var(X)), assertion(F == X^2).
 test(simplificar_coeficiente_potencia) :- s(X,3*X^2,F), assertion(var(X)), assertion(F == X^3).
+test(coeficiente_fraccionario_libre) :- s(X,3*X,F), assertion(var(X)), assertion(F == 3/2*X^2).
+test(coeficiente_fraccionario_potencia) :- s(X,5*X^2,F), assertion(var(X)), assertion(F == 5/3*X^3).
+test(coeficiente_fraccionario_negativo) :- s(X, -3*X,F), assertion(var(X)), assertion(F == -3/2*X^2).
+test(fraccion_en_primitiva) :- analizar('3x',0,1,R), assertion(R.primitiva == "3/2*x^2"), cerca(R.definida,1.5).
+test(fraccion_en_producto_funcion) :- analizar('3cos(2x)',0,1,R), assertion(R.primitiva == "3/2*sin(2*x)").
+test(fraccion_ingresada) :- analizar('(3/2)x',0,1,R), assertion(R.primitiva == "3/4*x^2"), cerca(R.definida,0.75).
+test(decimal_ingresado_como_fraccion) :- analizar('2.5x',0,1,R), assertion(R.primitiva == "5/4*x^2"), cerca(R.definida,1.25).
+test(constante_fraccionaria) :- analizar('1/3',0,1,R), assertion(R.primitiva == "1/3*x"), cerca(R.definida,1/3).
+test(fraccion_reducida) :- analizar('(6/4)x',0,1,R), assertion(R.primitiva == "3/4*x^2").
+test(cocientes_anidados_fraccionarios) :- analizar('x/2',0,1,R), assertion(R.primitiva == "1/4*x^2").
+test(limite_racional_exacto) :- leer_limite('1/3',N), assertion(rational(N)), assertion(N*3 =:= 1).
+test(irracional_sin_fraccion_inventada) :- leer_expresion('sin(1)',_,E), assertion(float(E)).
+test(pi_sin_fraccion_inventada) :- leer_limite('pi',N), assertion(float(N)).
+test(pendiente_racional) :- resuelve('sin(x/3)',0,1,3*(1-cos(1/3)),3*(1-cos(1/3))).
 test(pi_unicode) :- leer_limite('2π',N), cerca(N,2*pi).
 test(no_ligar_potencia_ajena, [fail]) :- s(X,X^X,_).
 test(no_aceptar_variable_ajena, [fail]) :- s(_,Y+1,_), nonvar(Y).

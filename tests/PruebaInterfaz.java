@@ -60,6 +60,14 @@ public final class PruebaInterfaz {
             });
             esperar(() -> dialogoProcedimiento()==null);
             SwingUtilities.invokeAndWait(() -> {
+                campo("expresion").setText("3x"); boton("calcular").doClick();
+            });
+            esperar(() -> primitiva().getText().startsWith("F(x) ="));
+            SwingUtilities.invokeAndWait(() -> {
+                comprobar(primitiva().getText().equals("F(x) = 3/2·x² + C"),"Fracción visible en antiderivada");
+                captura("docs/captura-fraccion.png");
+            });
+            SwingUtilities.invokeAndWait(() -> {
                 boton("ejemplos").doClick();
                 JPopupMenu popup=null;
                 for (MenuElement e:MenuSelectionManager.defaultManager().getSelectedPath()) if(e instanceof JPopupMenu p) popup=p;

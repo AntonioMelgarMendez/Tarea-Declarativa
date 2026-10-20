@@ -23,6 +23,13 @@ public final class PruebaPuente {
         comprobar(Math.abs(visual.area()-0.5) < 1e-7, "Teclado visual");
         var limite = puente.resolver("sin(x)", "0", "π");
         comprobar(Math.abs(limite.integral()-2) < 1e-9, "Tecla π en límites");
+        var fraccion = puente.resolver("3x", "0", "1");
+        comprobar(fraccion.primitiva().equals("3/2*x^2"), "Coeficiente fraccionario simbólico");
+        comprobar(Math.abs(fraccion.integral()-1.5) < 1e-9, "Evaluación numérica separada");
+        var coeficiente = puente.resolver("(3/2)x", "0", "1");
+        comprobar(coeficiente.primitiva().equals("3/4*x^2"), "Entrada fraccionaria");
+        var decimal = puente.resolver("2.5x", "0", "1");
+        comprobar(decimal.primitiva().equals("5/4*x^2"), "Literal decimal en fracción");
         rechaza(() -> puente.resolver("1/x", "-1", "1"), "Polo interior");
         rechaza(() -> puente.resolver("halt(0)", "0", "1"), "Inyección");
         rechaza(() -> puente.resolver("x\nhalt", "0", "1"), "Salto de línea");
@@ -31,7 +38,7 @@ public final class PruebaPuente {
             PuenteProlog.interpretar("OK\nAREA\tNaN\n");
             throw new AssertionError("Se aceptó respuesta inválida");
         } catch (IOException esperado) { /* correcto */ }
-        System.out.println("Java ↔ SWI-Prolog: 16 comprobaciones correctas.");
+        System.out.println("Java ↔ SWI-Prolog: 20 comprobaciones correctas.");
     }
     private static void comprobar(boolean condicion, String nombre) {
         if (!condicion) throw new AssertionError(nombre);
